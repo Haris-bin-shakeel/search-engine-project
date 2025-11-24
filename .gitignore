@@ -1,0 +1,27 @@
+# Ignore output folders
+output/
+forward_index/
+inverted_index/
+lexicon/
+
+# Ignore compiled executables
+*.exe
+*.out
+*.obj
+*.o
+
+# Ignore temporary or log files
+*.log
+*.tmp
+
+# Ignore compressed files
+*.gz
+*.zip
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore IDE-specific folders (VS Code / Visual Studio)
+.vscode/
+.vs/
