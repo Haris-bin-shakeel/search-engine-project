@@ -1,27 +1,60 @@
-# Ignore output folders
-output/
-forward_index/
-inverted_index/
-lexicon/
+# ----------------------
+# Build & output folders
+# ----------------------
+/output/
+/forward_index/
+/inverted_index/
+/lexicon/
+/build/
+/bin/
 
-# Ignore compiled executables
+# Compiled files
 *.exe
 *.out
 *.obj
 *.o
+*.a
+*.lib
+*.dll
+*.so
 
-# Ignore temporary or log files
-*.log
-*.tmp
+# ----------------------
+# IDE / Editor files
+# ----------------------
+.vscode/
+.vs/
+*.user
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*.bak
 
-# Ignore compressed files
-*.gz
-*.zip
-
-# Ignore OS-specific files
+# ----------------------
+# OS-specific files
+# ----------------------
 .DS_Store
 Thumbs.db
 
-# Ignore IDE-specific folders (VS Code / Visual Studio)
-.vscode/
-.vs/
+# ----------------------
+# Temporary / log / cache files
+# ----------------------
+*.log
+*.tmp
+*.cache
+*.bin
+
+# ----------------------
+# Python virtual environments (if used)
+# ----------------------
+venv/
+__pycache__/
+*.pyc
+
+# ----------------------
+# CMake / Makefiles
+# ----------------------
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile

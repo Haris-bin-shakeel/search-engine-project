@@ -1,23 +1,14 @@
 #pragma once
-#include "stage1_lexicon.h"
 #include <vector>
-#include <string>
 #include <unordered_map>
-
-struct ForwardDoc {
-    int doc_id;
-    std::vector<int> term_ids;
-    std::vector<int> term_freqs;
-    std::vector<int> positions;
-    int length;
-};
+#include <string>
+#include "stage1_lexicon.h"
 
 class ForwardIndex {
-private:
-    std::vector<ForwardDoc> documents;
-
 public:
-    void build(const std::string& dataset_path, const Lexicon& lex);
-    void save_segmented(const std::string& folder, int segment_size=1000);
-    const std::vector<ForwardDoc>& get_documents() const { return documents; }
+    void build_from_docs(const std::vector<std::string>& docs, const Lexicon& lex);
+    const std::unordered_map<int,std::vector<int>>& getIndex() const { return fwd_index; }
+
+private:
+    std::unordered_map<int,std::vector<int>> fwd_index;
 };

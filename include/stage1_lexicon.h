@@ -1,35 +1,35 @@
 #pragma once
 #include <string>
-#include <vector>
 #include <unordered_map>
-#include <unordered_set>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <algorithm>
-#include <nlohmann/json.hpp> // optional for JSON output
-
-struct LexiconEntry {
-    int term_id;
-    std::string term;
-    int df;              // document frequency
-    size_t posting_ptr;  // offset in inverted index
-};
+#include <vector>
+#include <cctype>
 
 class Lexicon {
-private:
-    std::vector<LexiconEntry> entries;
-    std::unordered_map<std::string, int> token_to_id;
-
 public:
-    void build(const std::string& dataset_path);
-    void save_segmented(const std::string& folder);
+    void build_from_docs(const std::vector<std::string>& docs);
 
     int get_term_id(const std::string& token) const {
         auto it = token_to_id.find(token);
-        return (it != token_to_id.end()) ? it->second : -1;
+        if (it != token_to_id.end()) return it->second;
+        return -1;
     }
 
-    std::vector<LexiconEntry>& get_entries_mutable() { return entries; }
-    const std::vector<LexiconEntry>& get_entries() const { return entries; }
+    int get_df(int term_id) const {
+        auto it = df_map.find(term_id);
+        return it != df_map.end() ? it->second : 0;
+    }
+
+    const std::unordered_map<std::string,int>& get_token_to_id() const { return token_to_id; }
+
+    // NEW: Get term string from term ID (needed for semantic search)
+    std::string get_term_string(int term_id) const {
+        auto it = id_to_token.find(term_id);
+        return it != id_to_token.end() ? it->second : "";
+    }
+
+private:
+    std::unordered_map<std::string,int> token_to_id;
+    std::unordered_map<int,std::string> id_to_token; // reverse mapping
+    std::unordered_map<int,int> df_map;
+    int next_id = 0;
 };
