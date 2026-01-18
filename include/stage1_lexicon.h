@@ -2,9 +2,15 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
+#include <unordered_set>
 #include <cctype>
 
 class Lexicon {
+public:
+    // Industry standard: Stopword filtering (single source of truth)
+    // Used by: static indexing, dynamic indexing, query parsing, autocomplete
+    static bool is_stopword(const std::string& token);
+    static std::vector<std::string> tokenize_and_filter(const std::string& text);
 public:
     void build_from_docs(const std::vector<std::string>& docs);
 
@@ -27,9 +33,21 @@ public:
         return it != id_to_token.end() ? it->second : "";
     }
 
+    // Added for Stage 9 compatibility: Incremental term addition
+    int add_or_get_term_id(const std::string& token);
+    
+    // Added for Stage 9 compatibility: Increment document frequency
+    void increment_df(int term_id);
+
 private:
+    // Industry standard: Common English stopwords (Lucene/Elasticsearch style)
+    static const std::unordered_set<std::string> STOPWORDS;
+    
     std::unordered_map<std::string,int> token_to_id;
     std::unordered_map<int,std::string> id_to_token; // reverse mapping
     std::unordered_map<int,int> df_map;
     int next_id = 0;
+    
+    // Added for Stage 9 compatibility: Allow modification of next_id
+    friend class DynamicIndexer;
 };

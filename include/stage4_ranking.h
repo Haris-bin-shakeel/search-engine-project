@@ -16,9 +16,15 @@ public:
     // ✅ Expose average document length if needed
     double get_avg_doc_len() const { return avg_doc_len; }
 
+    // Added for Stage 9 compatibility: Update stats after dynamic indexing
+    void update_stats();
+
 private:
     const ForwardIndex& fwd_index;
     const Lexicon& lexicon;
     std::unordered_map<int,double> idf_map;
     double avg_doc_len = 0.0;
+    
+    // Added for Stage 9 compatibility: Allow non-const access for updates
+    friend class DynamicIndexer;
 };

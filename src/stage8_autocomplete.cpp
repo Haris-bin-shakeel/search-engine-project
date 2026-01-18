@@ -11,6 +11,7 @@ static std::string to_lower(const std::string& s) {
 }
 
 void Autocomplete::build_trie() {
+    // Build from documents (backward compatibility)
     for (const auto& doc : documents) {
         std::istringstream iss(doc);
         std::string token;
@@ -26,6 +27,27 @@ void Autocomplete::build_trie() {
             node->is_word = true;
             node->word = token;
         }
+    }
+}
+
+// Added for Stage 9 compatibility: Lexicon-driven autocomplete
+void Autocomplete::rebuild_from_lexicon() {
+    // Clear existing trie
+    root = std::make_shared<TrieNode>();
+    
+    // Build trie from all tokens in lexicon (industry standard)
+    const auto& token_to_id = lexicon.get_token_to_id();
+    for (const auto& [token, term_id] : token_to_id) {
+        std::string lower_token = to_lower(token);
+        auto node = root;
+        for (char c : lower_token) {
+            if (!node->children.count(c)) {
+                node->children[c] = std::make_shared<TrieNode>();
+            }
+            node = node->children[c];
+        }
+        node->is_word = true;
+        node->word = lower_token;
     }
 }
 

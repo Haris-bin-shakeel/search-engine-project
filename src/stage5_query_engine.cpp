@@ -8,23 +8,32 @@
 std::vector<SearchResult> QueryEngine::search(const std::string& query, int top_k) {
     std::vector<SearchResult> results;
 
-    // Tokenize query
-    std::istringstream iss(query);
-    std::string token;
+    // Industry standard: Tokenize query with stopword filtering (same as indexing)
+    std::vector<std::string> tokens = Lexicon::tokenize_and_filter(query);
     std::vector<int> query_term_ids;
-    while (iss >> token) {
-        std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+    for (const auto& token : tokens) {
         int term_id = lexicon.get_term_id(token);
         if (term_id != -1) query_term_ids.push_back(term_id);
     }
 
-    // Aggregate BM25 scores
+    // Industry standard: Merge static + delta postings at query time
     std::unordered_map<int, double> doc_scores;
     for (int term_id : query_term_ids) {
-        auto it = inv_index.getIndex().find(term_id);
-        if (it != inv_index.getIndex().end()) {
-            for (int doc_id : it->second) {
+        // Get postings from static index
+        auto static_it = inv_index.getIndex().find(term_id);
+        if (static_it != inv_index.getIndex().end()) {
+            for (int doc_id : static_it->second) {
                 doc_scores[doc_id] += 1.0; // simple frequency-based scoring
+            }
+        }
+        
+        // Get postings from delta index (Stage 9)
+        if (delta_inv_index) {
+            auto delta_it = delta_inv_index->find(term_id);
+            if (delta_it != delta_inv_index->end()) {
+                for (int doc_id : delta_it->second) {
+                    doc_scores[doc_id] += 1.0; // same scoring
+                }
             }
         }
     }

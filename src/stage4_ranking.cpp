@@ -32,3 +32,23 @@ double Stage4Ranking::score(int term_id, int doc_id) const {
 
     return idf * tf * (k1 + 1) / (tf + k1 * (1 - b + b * doc_len / avg_doc_len));
 }
+
+// Added for Stage 9 compatibility: Update stats after dynamic indexing
+void Stage4Ranking::update_stats() {
+    // Recompute average document length
+    size_t total_len = 0;
+    for (const auto& [doc_id, terms] : fwd_index.getIndex()) {
+        total_len += terms.size();
+    }
+    if (!fwd_index.getIndex().empty()) {
+        avg_doc_len = total_len / static_cast<double>(fwd_index.getIndex().size());
+    }
+    
+    // Recompute IDF for all terms
+    int N = static_cast<int>(fwd_index.getIndex().size());
+    idf_map.clear();
+    for (const auto& [token, term_id] : lexicon.get_token_to_id()) {
+        int df = lexicon.get_df(term_id);
+        idf_map[term_id] = std::log((N - df + 0.5) / (df + 0.5) + 1.0);
+    }
+}

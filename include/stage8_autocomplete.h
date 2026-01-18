@@ -20,6 +20,11 @@ public:
         : documents(docs), lexicon(lex) { }
 
     void build_trie();
+    
+    // Added for Stage 9 compatibility: Rebuild trie from Lexicon (not documents)
+    // Industry standard: Autocomplete should reflect lexicon, not static corpus
+    void rebuild_from_lexicon();
+    
     std::vector<std::string> get_suggestions(const std::string& prefix, int max_suggestions = 5);
 
 private:
