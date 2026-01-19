@@ -17,6 +17,9 @@ public:
                 std::vector<SearchResult>& results,
                 const Lexicon& lex,
                 const Stage4Ranking& ranker);
+    
+    // Semantic search for debug mode (returns cosine similarity scores)
+    std::vector<SearchResult> semantic_search(const std::string& query, int top_k = 5);
 
 private:
     int dimension; // <-- declare dimension here

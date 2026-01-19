@@ -80,3 +80,52 @@ void SemanticEngine::rerank(const std::string& query,
         res.score = 0.7 * res.score + 0.3 * cos_sim;
     }
 }
+
+// Semantic search for debug mode (returns cosine similarity scores only)
+std::vector<SearchResult> SemanticEngine::semantic_search(const std::string& query, int top_k) {
+    std::vector<SearchResult> results;
+    
+    // Build query vector (same logic as rerank)
+    std::vector<double> query_vec(dimension, 0.0);
+    std::istringstream iss(query);
+    std::string token;
+    int count = 0;
+    while (iss >> token) {
+        std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+        if (embeddings.find(token) != embeddings.end()) {
+            for (int i = 0; i < dimension; ++i) query_vec[i] += embeddings[token][i];
+            ++count;
+        }
+    }
+    if (count > 0)
+        for (int i = 0; i < dimension; ++i) query_vec[i] /= count;
+    
+    // Compute cosine similarity for all documents
+    for (size_t doc_id = 0; doc_id < doc_vectors.size(); ++doc_id) {
+        const auto& doc_vec = doc_vectors[doc_id];
+        
+        double dot = 0.0, norm_q = 0.0, norm_d = 0.0;
+        for (int i = 0; i < dimension; ++i) {
+            dot += query_vec[i] * doc_vec[i];
+            norm_q += query_vec[i] * query_vec[i];
+            norm_d += doc_vec[i] * doc_vec[i];
+        }
+        double cos_sim = (norm_q && norm_d) ? dot / (std::sqrt(norm_q) * std::sqrt(norm_d)) : 0.0;
+        
+        if (cos_sim > 0.0) { // Only include documents with some similarity
+            SearchResult res;
+            res.doc_id = static_cast<int>(doc_id);
+            res.score = cos_sim; // Pure cosine similarity (no BM25 mixing)
+            res.snippet = "";
+            results.push_back(res);
+        }
+    }
+    
+    // Sort by cosine similarity descending
+    std::sort(results.begin(), results.end(), [](const SearchResult& a, const SearchResult& b) {
+        return a.score > b.score;
+    });
+    
+    if (results.size() > (size_t)top_k) results.resize(top_k);
+    return results;
+}

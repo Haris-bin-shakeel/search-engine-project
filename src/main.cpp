@@ -41,6 +41,33 @@ bool parse_add_command(const std::string& input, std::string& document_text) {
     return false;
 }
 
+// Semantic debug helper (NO side effects - read-only demonstration)
+void semantic_debug(
+    const std::string& query,
+    std::shared_ptr<SemanticEngine> semantic,
+    int top_k = 5
+) {
+    std::cout << "\n[SEMANTIC DEBUG MODE]\n";
+    std::cout << "Query: \"" << query << "\"\n";
+
+    auto results = semantic->semantic_search(query, top_k);
+
+    if (results.empty()) {
+        std::cout << "No semantic matches found.\n";
+        return;
+    }
+
+    std::cout << "Top semantic matches (cosine similarity):\n";
+    for (size_t i = 0; i < results.size(); ++i) {
+        std::cout << "  " << (i + 1)
+                  << ". DocID: " << results[i].doc_id
+                  << " | Similarity: " << results[i].score
+                  << std::endl;
+    }
+
+    std::cout << "[END SEMANTIC DEBUG]\n\n";
+}
+
 int main() {
     std::cout << "========================================" << std::endl;
     std::cout << "   Search Engine - Industry Grade CLI" << std::endl;
@@ -147,6 +174,7 @@ int main() {
     std::cout << "  - Enter query text to search" << std::endl;
     std::cout << "  - ADD: <text> to add new document" << std::endl;
     std::cout << "  - AUTO: <prefix> for autocomplete" << std::endl;
+    std::cout << "  - SEMANTIC: <query> for semantic-only search (debug)" << std::endl;
     std::cout << "  - COMPACT to merge delta into static index" << std::endl;
     std::cout << "  - EXIT or QUIT to exit\n" << std::endl;
     std::cout << "========================================\n" << std::endl;
@@ -210,6 +238,15 @@ int main() {
             auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count();
             std::cout << "[COMPACT] Compaction completed in " << ms << " ms." << std::endl;
             std::cout << "[COMPACT] " << compacted << " documents merged into static index.\n" << std::endl;
+            continue;
+        }
+        
+        // Handle SEMANTIC debug command (Industry standard: semantic search demonstration)
+        if (upper_input.size() > 9 && upper_input.substr(0, 9) == "SEMANTIC:") {
+            std::string query = trim(input.substr(9));
+            if (!query.empty()) {
+                semantic_debug(query, semantic, 5);
+            }
             continue;
         }
         
